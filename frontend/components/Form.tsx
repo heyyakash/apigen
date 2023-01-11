@@ -6,6 +6,8 @@ const Form = () => {
   type request = {
     GET: boolean
   }
+
+
   const { handleSubmit, control, reset, register } = useForm()
   const [queries, setQueries] = useState(false);
   const { fields, append, prepend, remove, swap, move, insert } = useFieldArray({
@@ -13,9 +15,26 @@ const Form = () => {
     name: "test", // unique name for your Field Array
   });
 
-  const submit = (data: any) => console.log(data)
+  const submit = async (data: any) => {
+    console.log("Sent")
+    const res = await fetch('http://192.168.212.50:5000',{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify(data)
+    })
+    const result = await res.text()
+    console.log(result)
+    setSuccess(true)
+    setData(result)
+  }
+
+  const[success,setSuccess] = useState(false)
+  const[data,setData] = useState(null)
 
   return (
+    <>
     <form onSubmit={handleSubmit(submit)} className='mt-10'>
       <h3 className="text-xl">GET Request</h3>
       <div>
@@ -34,6 +53,8 @@ const Form = () => {
             </select>
           </div>
 
+          
+
         </div>
 
         <div className='flex my-2 flex-col gap-1'>
@@ -48,11 +69,6 @@ const Form = () => {
               {fields.map((item, index) => (
                 <li key={item.id}>
                   <input className='text-input my-[.1rem]' {...register(`test.${index}.firstName`)} />
-                  {/* <Controller
-                  render={({ field }) => <input {...field} />}
-                  name={`test.${index}.lastName`}
-                  control={control}
-                /> */}
                   <button className="formbutton border-red-500" type="button" onClick={() => remove(index)}>Delete</button>
                 </li>
               ))}
@@ -70,6 +86,16 @@ const Form = () => {
       </div>
       <input type="submit" value="submit" />
     </form>
+
+    {data?(
+      <div className='bg-[#0A2647] p-7 rounded-lg leading-7 text-white'>
+      <p dangerouslySetInnerHTML={{__html:data}}></p>
+      </div>
+    ):(
+      <>
+      </>
+    )}
+    </>
   )
 }
 
